@@ -24,10 +24,8 @@ import com.example.quizapp.ui.theme.CorrectGreen
 import com.example.quizapp.ui.theme.CorrectGreenLight
 import com.example.quizapp.ui.theme.WrongRed
 import com.example.quizapp.ui.theme.WrongRedLight
+import java.util.Locale
 
-/**
- * Tela de execução do quiz com timer, progresso e feedback visual.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuizScreen(
@@ -45,7 +43,6 @@ fun QuizScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    // Navegar para resultado quando finalizar
     LaunchedEffect(state.isFinished, state.resultId) {
         if (state.isFinished && state.resultId != null) {
             onQuizFinished(state.resultId!!)
@@ -76,6 +73,7 @@ fun QuizScreen(
                 }
             }
             state.error != null -> {
+                val errorMessage = state.error
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -90,7 +88,7 @@ fun QuizScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = state.error,
+                            text = errorMessage ?: "",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -103,131 +101,133 @@ fun QuizScreen(
                 }
             }
             else -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp)
-            ) {
-                // Timer e progresso
-                TimerAndProgress(state)
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Pergunta
-                val question = state.questions[state.currentIndex]
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(16.dp)
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp)
+                    TimerAndProgress(state)
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    val question = state.questions[state.currentIndex]
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
-                        Text(
-                            text = "Pergunta ${state.currentIndex + 1} de ${state.questions.size}",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = question.question,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Opções
-                question.options.forEach { option ->
-                    val isSelected = state.selectedOption == option
-                    val isCorrect = option == question.correct
-                    val isAnswered = state.isAnswered
-
-                    val backgroundColor by animateColorAsState(
-                        targetValue = when {
-                            !isAnswered -> MaterialTheme.colorScheme.surface
-                            isCorrect -> CorrectGreenLight
-                            isSelected && !isCorrect -> WrongRedLight
-                            else -> MaterialTheme.colorScheme.surface
-                        },
-                        label = "optionBg"
-                    )
-
-                    val borderColor = when {
-                        !isAnswered && isSelected -> MaterialTheme.colorScheme.primary
-                        isAnswered && isCorrect -> CorrectGreen
-                        isAnswered && isSelected && !isCorrect -> WrongRed
-                        else -> MaterialTheme.colorScheme.outlineVariant
-                    }
-
-                    OutlinedCard(
-                        onClick = { viewModel.selectOption(option) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.outlinedCardColors(containerColor = backgroundColor),
-                        border = BorderStroke(
-                            width = if (isSelected || (isAnswered && isCorrect)) 2.dp else 1.dp,
-                            color = borderColor
-                        ),
-                        enabled = !isAnswered
-                    ) {
-                        Row(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .padding(24.dp)
                         ) {
                             Text(
-                                text = option,
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.weight(1f)
+                                text = "Pergunta ${state.currentIndex + 1} de ${state.questions.size}",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary
                             )
-                            if (isAnswered) {
-                                if (isCorrect) {
-                                    Icon(
-                                        Icons.Default.CheckCircle,
-                                        contentDescription = "Correto",
-                                        tint = CorrectGreen
-                                    )
-                                } else if (isSelected) {
-                                    Icon(
-                                        Icons.Default.Cancel,
-                                        contentDescription = "Incorreto",
-                                        tint = WrongRed
-                                    )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = question.question,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    question.options.forEach { option ->
+                        val isSelected = state.selectedOption == option
+                        val isCorrect = option == question.correct
+                        val isAnswered = state.isAnswered
+                        
+                        /** Gemini - início
+                        * Prompt: Anime a cor de fundo da opção de resposta com base no estado (não respondida, correta, incorreta).
+                        *
+                        */
+                        val backgroundColor by animateColorAsState(
+                            targetValue = when {
+                                !isAnswered -> MaterialTheme.colorScheme.surface
+                                isCorrect -> CorrectGreenLight
+                                isSelected && !isCorrect -> WrongRedLight
+                                else -> MaterialTheme.colorScheme.surface
+                            },
+                            label = "optionBg"
+                        )
+                        /** Gemini - final */
+
+                        val borderColor = when {
+                            !isAnswered && isSelected -> MaterialTheme.colorScheme.primary
+                            isAnswered && isCorrect -> CorrectGreen
+                            isAnswered && isSelected -> WrongRed
+                            else -> MaterialTheme.colorScheme.outlineVariant
+                        }
+
+                        OutlinedCard(
+                            onClick = { viewModel.selectOption(option) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.outlinedCardColors(containerColor = backgroundColor),
+                            border = BorderStroke(
+                                width = if (isSelected || (isAnswered && isCorrect)) 2.dp else 1.dp,
+                                color = borderColor
+                            ),
+                            enabled = !isAnswered
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = option,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                if (isAnswered) {
+                                    if (isCorrect) {
+                                        Icon(
+                                            Icons.Default.CheckCircle,
+                                            contentDescription = "Correto",
+                                            tint = CorrectGreen
+                                        )
+                                    } else if (isSelected) {
+                                        Icon(
+                                            Icons.Default.Cancel,
+                                            contentDescription = "Incorreto",
+                                            tint = WrongRed
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.weight(1f))
 
-                // Botão avançar
-                if (state.isAnswered && !state.isFinished) {
-                    Button(
-                        onClick = { viewModel.nextQuestion() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        Text(
-                            text = if (state.currentIndex + 1 >= state.questions.size) "Finalizar" else "Próxima",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                    if (state.isAnswered && !state.isFinished) {
+                        Button(
+                            onClick = { viewModel.nextQuestion() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Text(
+                                text = if (state.currentIndex + 1 >= state.questions.size) "Finalizar" else "Próxima",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
                 }
             }
-        } // end when
+        }
     }
 }
 
@@ -236,6 +236,11 @@ private fun TimerAndProgress(state: QuizUiState) {
     val remaining = state.totalTimeSeconds - state.elapsedSeconds
     val minutes = remaining / 60
     val seconds = remaining % 60
+    
+    /** Gemini - início
+    * Prompt: Anime o progresso do timer e mude a cor com base no tempo restante.
+    *
+    */
     val progress by animateFloatAsState(
         targetValue = if (state.totalTimeSeconds > 0)
             state.elapsedSeconds.toFloat() / state.totalTimeSeconds.toFloat()
@@ -247,6 +252,7 @@ private fun TimerAndProgress(state: QuizUiState) {
         remaining <= 60 -> Color(0xFFFF9800)
         else -> CorrectGreen
     }
+    /** Gemini - final */
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -255,7 +261,7 @@ private fun TimerAndProgress(state: QuizUiState) {
         Icon(Icons.Default.Timer, contentDescription = null, tint = timerColor)
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = String.format("%02d:%02d", minutes, seconds),
+            text = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = timerColor

@@ -1,8 +1,8 @@
 package com.example.quizapp.data.remote
 
 import com.example.quizapp.data.local.QuizResultDao
-import com.example.quizapp.data.mapper.toDomain
-import com.example.quizapp.data.mapper.toEntity
+import com.example.quizapp.data.toDomain
+import com.example.quizapp.data.toEntity
 import com.example.quizapp.domain.QuizResult
 import com.example.quizapp.domain.Result
 import com.example.quizapp.domain.UserProfile

@@ -2,8 +2,8 @@ package com.example.quizapp.data.remote
 
 import com.example.quizapp.data.local.QuestionDao
 import com.example.quizapp.data.local.QuizDao
-import com.example.quizapp.data.mapper.toDomain
-import com.example.quizapp.data.mapper.toEntity
+import com.example.quizapp.data.toDomain
+import com.example.quizapp.data.toEntity
 import com.example.quizapp.domain.Question
 import com.example.quizapp.domain.Quiz
 import com.example.quizapp.domain.Result
@@ -12,14 +12,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
-/**
- * Implementação do repositório de quizzes.
- * Sincroniza dados do Firestore para o Room e sempre lê do banco local.
- *
- * Estrutura no Firestore:
- * - /quizzes/{quizId} → dados do quiz
- * - /quizzes/{quizId}/questions/{questionId} → questões do quiz
- */
+/** Gemini - início
+* Prompt: Crie uma implementação de repositório de quizzes que sincroniza dados do Firestore para o banco de dados local Room.
+*
+*/
 class QuizRepositoryImpl(
     private val firestore: FirebaseFirestore,
     private val quizDao: QuizDao,
@@ -40,7 +36,6 @@ class QuizRepositoryImpl(
 
     override suspend fun syncFromFirebase(): Result<Unit> {
         return try {
-            // 1. Buscar todos os quizzes do Firestore
             val quizzesSnapshot = firestore.collection("quizzes").get().await()
 
             val quizzes = mutableListOf<Quiz>()
@@ -48,11 +43,18 @@ class QuizRepositoryImpl(
 
             for (doc in quizzesSnapshot.documents) {
                 val id = doc.id
-                val title = doc.getString("title") ?: ""
+                var title = doc.getString("title") ?: ""
                 val subtitle = doc.getString("subtitle") ?: ""
                 val time = (doc.getLong("time") ?: 10L).toInt()
 
-                // 2. Buscar questões de cada quiz (subcoleção)
+                if (title == "SQL, NoSQL e Modelagem de Dados") {
+                    title = "Banco de Dados"
+                } else if (title == "Conceitos de IA e Machine Learning") {
+                    title = "Inteligência Artificial"
+                } else if (title == "Protocolos, Internet e Comunicação") {
+                    title = "Redes de Computadores"
+                }
+
                 val questionsSnapshot = firestore.collection("quizzes")
                     .document(id)
                     .collection("questions")
@@ -87,7 +89,6 @@ class QuizRepositoryImpl(
                 allQuestions.addAll(questions)
             }
 
-            // 3. Limpar dados antigos e inserir novos no Room
             quizDao.deleteAll()
             questionDao.deleteAll()
             quizDao.insertAll(quizzes.map { it.toEntity() })
@@ -103,3 +104,4 @@ class QuizRepositoryImpl(
         return quizDao.getCount() > 0
     }
 }
+/** Gemini - final */

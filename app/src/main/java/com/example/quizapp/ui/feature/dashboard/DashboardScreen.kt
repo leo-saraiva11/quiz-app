@@ -2,7 +2,7 @@ package com.example.quizapp.ui.feature.dashboard
 
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.* 
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -28,12 +28,6 @@ import com.example.quizapp.domain.Quiz
 import com.example.quizapp.ui.theme.GradientEnd
 import com.example.quizapp.ui.theme.GradientStart
 
-/**
- * Tela principal (Dashboard) com:
- * - Saudação e estatísticas rápidas
- * - Grid de quizzes disponíveis
- * - Acesso a histórico, ranking e sincronização
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
@@ -119,7 +113,6 @@ fun DashboardScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Header com gradiente
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -146,7 +139,6 @@ fun DashboardScreen(
                     )
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Stats Row
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
@@ -172,7 +164,6 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Quiz Grid
             Text(
                 text = "Quizzes Disponíveis",
                 style = MaterialTheme.typography.titleLarge,
@@ -196,12 +187,17 @@ fun DashboardScreen(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(16.dp))
+                        /** Gemini - início
+                        * Prompt: Crie uma mensagem amigável de lista vazia para o dashboard do quiz.
+                        *
+                        */
                         Text(
                             text = "Nenhum quiz disponível.\nToque em sincronizar para baixar.",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
+                        /** Gemini - final */
                     }
                 }
             } else {
@@ -249,37 +245,50 @@ private fun StatItem(icon: ImageVector, value: String, label: String) {
 
 @Composable
 private fun QuizCard(quiz: Quiz, onClick: () -> Unit) {
-    val icons = listOf("💻", "🌐", "🔒", "🤖", "📱", "🗄️")
-    val emoji = icons[quiz.id.hashCode().mod(icons.size).let { if (it < 0) it + icons.size else it }]
+    /** Gemini - início
+    * Prompt: Atribua emojis diferentes a cada quiz de acordo com o seu título.
+    *
+    */
+    val emoji = when (quiz.title) {
+        "Banco de Dados" -> "🗄️"
+        "Inteligência Artificial" -> "🤖"
+        "Redes de Computadores" -> "🌐"
+        else -> "💻"
+    }
+    /** Gemini - final */
 
     ElevatedCard(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(210.dp),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = emoji, fontSize = 36.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = quiz.title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = quiz.subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(12.dp))
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = emoji, fontSize = 36.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = quiz.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = quiz.subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
