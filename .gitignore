@@ -1,0 +1,46 @@
+# ===========================
+# Android / Gradle
+# ===========================
+*.iml
+.gradle/
+local.properties
+.idea/
+.DS_Store
+build/
+app/build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Kotlin
+.kotlin/
+
+# ===========================
+# Firebase / Secrets — NUNCA comitar!
+# ===========================
+serviceAccountKey.json
+# google-services.json pode ser comitado pois não contém segredos de servidor,
+# mas se preferir manter privado, descomente a linha abaixo:
+# google-services.json
+
+# ===========================
+# Node.js (scripts de importação)
+# ===========================
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# ===========================
+# Arquivos de scripts auxiliares
+# (usados apenas localmente para setup)
+# ===========================
+check_key.js
+check_time.js
+compare_clocks.js
+import_questions.js
+questions.json
+package.json
