@@ -1,7 +1,7 @@
 package com.example.quizapp.data.remote
 
 import com.example.quizapp.data.local.UserProfileDao
-import com.example.quizapp.data.mapper.toEntity
+import com.example.quizapp.data.toEntity
 import com.example.quizapp.domain.Result
 import com.example.quizapp.domain.UserProfile
 import com.google.firebase.auth.FirebaseAuth
