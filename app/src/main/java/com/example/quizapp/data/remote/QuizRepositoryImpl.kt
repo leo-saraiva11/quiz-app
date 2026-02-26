@@ -1,5 +1,6 @@
 package com.example.quizapp.data.remote
 
+import android.util.Log
 import com.example.quizapp.data.local.QuestionDao
 import com.example.quizapp.data.local.QuizDao
 import com.example.quizapp.data.toDomain
@@ -47,13 +48,16 @@ class QuizRepositoryImpl(
                 val subtitle = doc.getString("subtitle") ?: ""
                 val time = (doc.getLong("time") ?: 10L).toInt()
 
-                if (title == "SQL, NoSQL e Modelagem de Dados") {
+                // Se o título estiver vindo como o subtítulo técnico, corrigimos aqui
+                if (title == "SQL, NoSQL e Modelagem de Dados" || subtitle == "SQL, NoSQL e Modelagem de Dados") {
                     title = "Banco de Dados"
-                } else if (title == "Conceitos de IA e Machine Learning") {
+                } else if (title == "Conceitos de IA e Machine Learning" || subtitle == "Conceitos de IA e Machine Learning") {
                     title = "Inteligência Artificial"
-                } else if (title == "Protocolos, Internet e Comunicação") {
+                } else if (title == "Protocolos, Internet e Comunicação" || subtitle == "Protocolos, Internet e Comunicação") {
                     title = "Redes de Computadores"
                 }
+
+                Log.d("QuizSync", "Buscando perguntas para o quiz: $id ($title)")
 
                 val questionsSnapshot = firestore.collection("quizzes")
                     .document(id)
@@ -66,16 +70,20 @@ class QuizRepositoryImpl(
                         @Suppress("UNCHECKED_CAST")
                         val options = qDoc.get("options") as? List<String> ?: emptyList()
                         Question(
-                            id = qDoc.id,
+                            // Usamos id do quiz + id da questão para evitar colisões no banco local
+                            id = "${id}_${qDoc.id}",
                             quizId = id,
                             question = qDoc.getString("question") ?: "",
                             options = options,
                             correct = qDoc.getString("correct") ?: ""
                         )
                     } catch (e: Exception) {
+                        Log.e("QuizSync", "Erro ao processar questão no quiz $id: ${e.message}")
                         null
                     }
                 }
+
+                Log.d("QuizSync", "Encontradas ${questions.size} perguntas para o quiz $id")
 
                 quizzes.add(
                     Quiz(
