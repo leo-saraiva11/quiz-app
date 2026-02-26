@@ -25,11 +25,5 @@ Este é um aplicativo de quiz moderno para Android, desenvolvido como trabalho p
 *   **Backend:** Firebase (Authentication, Cloud Firestore)
 *   **Arquitetura:** MVVM (Model-View-ViewModel) com Clean Architecture.
 
-## 📥 Como Instalar
-
-1.  Baixe o arquivo [APK (v1.0.0)](link-para-o-apk-aqui) disponível nas releases deste repositório.
-2.  Habilite a instalação de fontes desconhecidas no seu dispositivo Android.
-3.  Instale e abra o Quiz App.
-
 ---
 *Desenvolvido para fins acadêmicos - UFU 2025*
